@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+  <script src="./underscore-min.js"></script>
+  <script src="https://leancloud.cn/scripts/lib/av-0.4.5.min.js"></script>
+  <link ref="stylesheet" href="bootstrap/css/bootstrap.min.css">
+</head>
+<body>
+
+<div>
+  <h4>CPH</h4>
+  <input id="cphid">
+  <button onclick="getCPH()">fetch</button>
+</div>
+
+<div>
+  <h4>CloudQuery</h4>
+  <textarea id="cql"></textarea>
+  <button onclick="cloudQuery()">Cloud Query</button>
+</div>
+
+<div>
+  <h4>CloudFunction</h4>
+  <input id="funcName">
+
+  <div><textarea id="funcBody"></textarea></div>
+  <button onclick="cloudFunction()">Cloud Function</button>
+</div>
+
+
+<div>
+  <pre id="result"></pre>
+  <div>
+    last update at:
+    <span id="lastUpdate"></span>
+  </div>
+</div>
+
+<script>
+  AV.initialize("5uzb76lzdkmrgbll3ib3gizg1o88lyw3jhsqvbc8e7iqnilx", "rg24h9hnef8z8q3vnhcaw19tc4r3c8u6h3bhahclj6fq9c27");
+  var ChannelProductHistory = AV.Object.extend('ChannelProductHistory')
+  var ChannelProductSnapshot = AV.Object.extend('ChannelProductSnapshot')
+  var ChannelProduct = AV.Object.extend('ChannelProduct')
+  var ProductHistory = AV.Object.extend('ProductHistory')
+  var Channel = AV.Object.extend('Channel')
+
+  function getInput(domId) {
+    return document.getElementById(domId).value
+  }
+
+  function success(values) {
+    document.getElementById('result').innerHTML = JSON.stringify(values)
+    document.getElementById('lastUpdate').innerHTML = new Date().getTime()
+  }
+
+  function failed(err) {
+    document.getElementById('result').innerHTML = 'failed,' + JSON.stringify(err)
+    document.getElementById('lastUpdate').innerHTML = new Date().getTime()
+  }
+
+  function getCPH() {
+    new AV.Query(ChannelProductHistory).get(getInput('cphid'))
+      .then(success, failed)
+  }
+
+  function getCloudQuery() {
+    return document.getElementById('cql').value
+  }
+
+  function cloudQuery() {
+    var cql = getCloudQuery()
+    console.log(cql)
+    AV.Query.doCloudQuery(cql, function (results) {
+      success(results)
+    }, function (err) {
+      failed(err)
+    })
+  }
+
+  function cloudFunction() {
+    AV.Cloud.run(document.getElementById('funcName').value,
+      JSON.parse(document.getElementById('funcBody').value), {
+        success: function (result) {
+          success(result)
+        },
+        error: function (error) {
+          failed(error)
+        }
+      });
+  }
+
+  function simulateCrawl(success) {
+    new AV.Query(ChannelProduct).first()
+      .then(function (cp) {
+        // I got record from crawler API
+        // ...
+        if (success) {
+          var record = {
+            brief: '我是个好应用呀',
+            commentCount: 123,
+            rateCount: 32,
+            rateValue: 3.2,
+            downloadCount: 3249,
+            timestamp: new Date().getTime()
+          }
+          var snapshot = {}
+          snapshot.record = record
+          snapshot.channelProduct = cp
+          snapshot.channel = cp.get('channel')
+          console.log('new snapshot,%s', JSON.stringify(snapshot))
+          new ChannelProductSnapshot(snapshot).save()
+        }
+      })
+  }
+
+</script>
+</body>
+</html>

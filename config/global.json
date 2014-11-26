@@ -1,0 +1,9 @@
+{
+  "applicationName": "techhack_core",
+  "applicationId": "5uzb76lzdkmrgbll3ib3gizg1o88lyw3jhsqvbc8e7iqnilx",
+  "applicationKey": "rg24h9hnef8z8q3vnhcaw19tc4r3c8u6h3bhahclj6fq9c27",
+  "masterKey": "novzzfm3sdwvxpiuwty6gq6jhxkhrs47df0hfcwq2q7xixc1",
+  "global": {
+    "avVersion": "0.3.1"
+  }
+}
